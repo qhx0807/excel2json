@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
-import './App.css'
 import Excel2json from './components/e2j'
 import Json2excel from './components/j2e'
 
