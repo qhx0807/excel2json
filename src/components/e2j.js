@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, Upload, Progress, notification } from 'antd'
+import { Button, Upload, Progress, notification, BackTop } from 'antd'
 import IconFont from './Icon'
 import '../styles/index.less'
 import { read } from '../utils/excel'
+import { fileSizeFormat, downLoadFile } from '../utils/tool'
 
 export default class Excel2json extends Component {
   constructor (props) {
@@ -29,6 +30,7 @@ export default class Excel2json extends Component {
   render () {
     return (
       <div className='page'>
+        <BackTop />
         <div className='header'>
           <Link to='/j2e' className='jump'>
             <Button shape='circle' size='small' icon='swap' />
@@ -54,11 +56,33 @@ export default class Excel2json extends Component {
             <div>
               <p className='file-info'>
                 <span>{this.state.fileMsg.name}</span>
-                <span>{this.state.fileMsg.size}</span>
+                <span>{ fileSizeFormat(this.state.fileMsg.size) }</span>
                 <span>{this.state.tableData.length}条数据</span>
+                <span>
+                  <a className='downj' href='javascript:;' onClick={this.clickDownHanler.bind(this)}>下载JSON文件</a>
+                </span>
               </p>
               <div className='file-data'>
-                file-data
+                <table className='table'>
+                  <thead>
+                    <tr>
+                      {this.state.tableHeader.map((item, index) => (
+                        <th key={index}>{item}</th>
+                      )) }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {this.state.tableData.map((item, index) => (
+                      <tr key={index}>
+                        {
+                          Object.keys(item).map((key, i) => (
+                            <td key={i}>{item[key]}</td>
+                          ))
+                        }
+                      </tr>
+                    )) }
+                  </tbody>
+                </table>
               </div>
             </div>
           }
@@ -85,7 +109,8 @@ export default class Excel2json extends Component {
     reader.onloadstart = () => {
       this.setState({
         showProgress: true,
-        resultShow: false
+        resultShow: false,
+        progressPercent: 0
       })
     }
     reader.onerror = e => {
@@ -117,6 +142,14 @@ export default class Excel2json extends Component {
         })
       }, 600)
     }
+  }
+
+  clickDownHanler () {
+    console.log(this.state.tableData)
+    const text = JSON.stringify(this.state.tableData)
+    const blob = new Blob([text], { type: 'application/json' }) // eslint-disable-line
+    const url = URL.createObjectURL(blob)
+    downLoadFile(url, this.state.fileMsg.name + '.json')
   }
 
   componentWillUnmount () {
